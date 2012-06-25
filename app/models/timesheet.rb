@@ -225,8 +225,8 @@ class Timesheet
     custom_fields_helper = Object.new.extend(CustomFieldsHelper)        
     csv_data = [
                 time_entry.id,
-                time_entry.spent_on.strftime( "%d.%m.%Y" ),
-                time_entry.spent_on.month,
+                time_entry.spent_on.strftime( "%m/%d/%Y" ),
+                "#{time_entry.spent_on.year}#{(time_entry.spent_on.month<10)?'0':''}#{time_entry.spent_on.month}",
                 time_entry.user.name,
      		time_entry.hours
    ];
