@@ -192,6 +192,7 @@ class Timesheet
 
     csv_data.concat [
                 t(:label_project),
+                t(:label_version),
 	        'Task',	
                 t(:label_issue),
                 "#{t(:label_issue)} #{t(:field_subject)}",
@@ -242,6 +243,7 @@ class Timesheet
 
     csv_data.concat [
                 time_entry.project.name,
+                (  if time_entry.issue.fixed_version_id then Version.find(time_entry.issue.fixed_version_id).name else '' end ),
 		("#{time_entry.issue.tracker.name} ##{time_entry.issue.id}" if time_entry.issue )+':'+(time_entry.issue.subject if time_entry.issue) ,
                 ("#{time_entry.issue.tracker.name} ##{time_entry.issue.id}" if time_entry.issue),
                 (time_entry.issue.subject if time_entry.issue)
