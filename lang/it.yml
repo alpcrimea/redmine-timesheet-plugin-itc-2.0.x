@@ -3,7 +3,7 @@ it:
   timesheet_date_from_label: Da
   timesheet_date_to_label: A
   timesheet_project_label: Progetto
-  timesheet_activities_label: AttivitÃ 
+  timesheet_activities_label: Attività
   timesheet_users_label: Utenti
   timesheet_showing_users: 'mostra tempo per: '
   timesheet_permalink: '(Permalink per questo riepilogo tempi)'
