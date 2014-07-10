@@ -253,7 +253,7 @@ class Timesheet
 
     time_entry.custom_field_values.each do |value|
 	if  value.custom_field.name=='Worklog'
-      		comment.concat "\n" +  custom_fields_helper.show_value(value)
+    comment.concat "\n" +  value.value
 	end
     end
 
@@ -272,7 +272,7 @@ class Timesheet
 
     time_entry.custom_field_values.each do |value|
 	unless value.custom_field.name=='Worklog'
-      		csv_data << custom_fields_helper.show_value(value)
+    csv_data << value.value
 	end
     end
 
