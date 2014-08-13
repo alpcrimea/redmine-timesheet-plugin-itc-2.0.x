@@ -13,8 +13,7 @@
     <th width="10%"><%= l(:label_issue) %></th>
     <th width="25%"><%= l(:field_comments) %></th>
     <th width="10%"><%= l(:field_hours) %></th>
-    <% Redmine::Hook.call_hook(:plugin_timesheet_views_timesheet_group_header, { }) %>
-    <th></th>
+    <%= call_hook(:plugin_timesheet_views_timesheet_group_header, {}) %>
   </thead>
   <tbody>
     <%= render :partial => "time_entry", :collection => entry[:logs], :locals => { :time_entries => entry[:logs] } %>
