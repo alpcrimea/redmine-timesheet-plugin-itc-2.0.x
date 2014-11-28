@@ -37,7 +37,7 @@ class Timesheet
       self.activities = options[:activities].collect do |activity_id|
         # Include project-overridden activities
         activity = TimeEntryActivity.find(activity_id)
-        project_activities = TimeEntryActivity.all(:conditions => ['parent_id IN (?)', activity.id]) if activity.parent_id.nil?
+        project_activities = TimeEntryActivity.where(['parent_id IN (?)', activity.id]) if activity.parent_id.nil?
         project_activities ||= []
 
         [activity.id.to_i] + project_activities.collect(&:id)
@@ -279,51 +279,42 @@ class Timesheet
 
 
   def time_entries_for_all_users(project)
-    return project.time_entries.find(:all,
-      :conditions => self.conditions(self.users),
-      :include => self.includes,
-      :order => "spent_on ASC")
+    return project.time_entries.includes(self.includes).
+      where(self.conditions(self.users)).
+      order('spent_on ASC')
   end
   
   def time_entries_for_all_users_in_group(group)
-    return TimeEntry.find(:all,
-      :conditions => self.conditions(group.user_ids),
-      :include => self.includes,
-      :order => "spent_on ASC")
+    return TimeEntry.includes(self.includes).
+      where(self.conditions(group.user_ids)).
+      order('spent_on ASC')
   end 
   
   def time_entries_for_current_user(project)
-    return project.time_entries.find(:all,
-      :conditions => self.conditions(User.current.id),
-      :include => self.includes,
-      :include => [:activity, :user, {:issue => [:tracker, :assigned_to, :priority]}],
-      :order => "spent_on ASC")
+    return project.time_entries.
+      includes(self.includes + [:activity, :user, {:issue => [:tracker, :assigned_to, :priority]}]).
+      where(self.conditions(User.current.id)).
+      order('spent_on ASC')
   end
 
   def issue_time_entries_for_all_users(issue)
-    return issue.time_entries.find(:all,
-      :conditions => self.conditions(self.users),
-      :include => self.includes,
-      :include => [:activity, :user],
-      :order => "spent_on ASC")
+    return issue.time_entries.includes(self.includes + [:activity, :user]).
+      where(self.conditions(self.users)).
+      order('spent_on ASC')
   end
 
   def issue_time_entries_for_current_user(issue)
-    return issue.time_entries.find(:all,
-      :conditions => self.conditions(User.current.id),
-      :include => self.includes,
-      :include => [:activity, :user],
-      :order => "spent_on ASC")
+    return issue.time_entries.includes(self.includes + [:activity, :user]).
+      where(self.conditions(User.current.id)).
+      order('spent_on ASC')
   end
 
   def time_entries_for_user(user, options={})
     extra_conditions = options.delete(:conditions)
 
-    return TimeEntry.find(:all,
-      :conditions => self.conditions([user], extra_conditions),
-      :include => self.includes,
-      :order => "spent_on ASC"
-    )
+    return TimeEntry.includes(self.includes).
+      where(self.conditions([user], extra_conditions)).
+      order('spent_on ASC')
   end
 
   def fetch_time_entries_by_project
@@ -463,11 +454,7 @@ class Timesheet
     logs = []
 
     #           extra_conditions = 'GROUP_BY spent_on'
-    logs=TimeEntry.find(:all,
-      :conditions => self.conditions(self.users),
-      :include => self.includes
-      #                          :group => "spent_on"
-    )
+    logs=TimeEntry.includes(self.includes).where(self.conditions(self.users))
        
        
     unless logs.empty?

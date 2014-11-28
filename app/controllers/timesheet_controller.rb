@@ -89,7 +89,7 @@ class TimesheetController < ApplicationController
   end
 
   def context_menu
-    @time_entries = TimeEntry.find(:all, :conditions => ['id IN (?)', params[:ids]])
+    @time_entries = TimeEntry.where(['id IN (?)', params[:ids]])
     render :layout => false
   end
 
@@ -115,14 +115,14 @@ class TimesheetController < ApplicationController
   end
 
   def get_activities
-    @activities = TimeEntryActivity.all(:conditions => 'parent_id IS NULL')
+    @activities = TimeEntryActivity.where('parent_id IS NULL')
   end
 
   def allowed_projects
     if User.current.admin?
-      return Project.find(:all, :order => 'name ASC')
+      return Project.all.order('name ASC')
     else
-      return Project.find(:all, :conditions => Project.visible_condition(User.current), :order => 'name ASC')
+      return Project.where(Project.visible_condition(User.current)).order('name ASC')
     end
   end
 

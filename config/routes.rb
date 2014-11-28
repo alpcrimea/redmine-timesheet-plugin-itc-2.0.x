@@ -1,9 +1,9 @@
 if Rails::VERSION::MAJOR >= 3
   RedmineApp::Application.routes.draw do
-    match 'timesheet/index' => 'timesheet#index'
-    match 'timesheet/context_menu' => 'timesheet#context_menu'
-    match 'timesheet/report' => 'timesheet#report'
-    match 'timesheet/reset' => 'timesheet#reset', :via => :delete
+    get 'timesheet/index', :to => 'timesheet#index'
+    get 'timesheet/context_menu', :to => 'timesheet#context_menu'
+    match 'timesheet/report', :to => 'timesheet#report', :via => [:get, :post]
+    match 'timesheet/reset', :to => 'timesheet#reset', :via => :delete
   end
 else
   ActionController::Routing::Routes.draw do |map|
