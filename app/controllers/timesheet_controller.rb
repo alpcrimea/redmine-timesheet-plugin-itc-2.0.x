@@ -120,7 +120,7 @@ class TimesheetController < ApplicationController
 
   def allowed_projects
     if User.current.admin?
-      return Project.all.order('name ASC')
+      return Project.order('name ASC')
     else
       return Project.where(Project.visible_condition(User.current)).order('name ASC')
     end

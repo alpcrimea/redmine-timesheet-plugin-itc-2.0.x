@@ -12,7 +12,6 @@
 <%= form_tag({}, { :id => 'time_entries'}) do -%>
   <% if @timesheet.time_entries.length > 0 %>
     <h2><%= l(:label_spent_time) %> (<%= h(number_with_precision(@grand_total, :precision => @precision)) -%> <%= h(l(:field_hours)) -%>)</h2>
-    <% puts  @timesheet.time_entries.to_yaml %>
     <% @timesheet.time_entries.each do |entryname,entry|
       case @timesheet.sort
         when :user %>
