@@ -1,3 +1,8 @@
+<div class="contextual">
+  <%= link_to_csv_export(@timesheet) %>
+  <%= permalink_to_timesheet(@timesheet) %>
+</div>
+
 <h2><%= l(:timesheet_title)%></h2>
 
 <%= render :partial => 'form' %>

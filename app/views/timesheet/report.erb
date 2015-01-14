@@ -1,3 +1,5 @@
+<%= javascript_include_tag 'timesheet.js', :plugin => 'timesheet_plugin' %>
+
 <div class="contextual">
   <%= link_to_csv_export(@timesheet) %>
   <%= permalink_to_timesheet(@timesheet) %>
@@ -42,7 +44,7 @@ end # form_tag
 <% end %>
 
 <div id="context-menu" style="display: none;"></div>
-<%= javascript_tag "new ContextMenu('#{url_for(:controller => 'timesheet', :action => 'context_menu')}')" %>
+<%# = javascript_tag "new ContextMenu('#{url_for(:controller => 'timesheet', :action => 'context_menu')}')" %>
 
 <%# TODO: Typo on hook %>
 <%= call_hook(:plugin_timesheet_view_timesheets_report_bottom, { :timesheet => @timesheet }) %>
