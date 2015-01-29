@@ -9,7 +9,7 @@ module RedmineTimesheetPlugin
           unloadable
           # Prefix our named_scopes to prevent collusion
           if Rails::VERSION::MAJOR >= 3
-            scope :timesheet_order_by_name, :order => 'name ASC'
+            scope :timesheet_order_by_name, lambda { {:order => 'name ASC'} }
             scope :timesheet_with_membership, lambda {|user|
               # Similar to Project.visible_by but without the STATUS check
               if user && user.memberships.any?
@@ -38,7 +38,7 @@ module RedmineTimesheetPlugin
               end
             }
           else
-            named_scope :timesheet_order_by_name, :order => 'name ASC'
+            scope :timesheet_order_by_name, lambda { {:order => 'name ASC'} }
             named_scope :timesheet_with_membership, lambda {|user|
               # Similar to Project.visible_by but without the STATUS check
               if user && user.memberships.any?
@@ -65,7 +65,7 @@ module RedmineTimesheetPlugin
                   :conditions => { :is_public => true }
                 }
               end
-            }              
+            }
           end
         end
       end
