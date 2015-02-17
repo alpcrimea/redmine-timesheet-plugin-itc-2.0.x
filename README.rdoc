@@ -9,7 +9,8 @@ Further modifications are:
 * Print style
 * Day total hour summaries for the print style
 * Cleaned up form layout
-* Headers of multiselects select all elements. They also deselect all elements if all elements are selected
+* Headers of multiselects select all elements. They also deselect all elements if all elements are already selected
+* Only one permission that allows to see all timelogs of all users
 
 == Features
 * Filtering and sum of timelogs by:
@@ -22,18 +23,12 @@ Further modifications are:
   * Issue
   * User
 * Access control based on the user's Projects and Roles
-* "Project Timesheet" permission to allow a user to see all timelogs on a project
 * Permalinks to reports
 * Plugin hook support for changing the behavior of the plugin
 * User configurable precision for hours
 * CSV exports
 
-== Getting the plugin
-
-Latest copy of plugin is available at {GitHub}[http://github.com/arkhitech/redmine_timesheet_plugin]
-
 == Installation and Setup
-
 1. In your redmine plugins directory, run the command: `git clone https://github.com/arkhitech/redmine_timesheet_plugin.git redmine_timesheet_plugin`
 2. Restart web server
 3. Login and click the Timesheet Link in the top left menu

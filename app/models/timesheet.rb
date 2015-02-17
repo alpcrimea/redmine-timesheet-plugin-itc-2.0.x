@@ -32,7 +32,7 @@ class Timesheet
     self.potential_time_entry_ids = options[:potential_time_entry_ids] || [ ]
     self.allowed_projects = options[:allowed_projects] || [ ]
     self.groups = [ ]
-            
+
     unless options[:activities].nil?
       self.activities = options[:activities].collect do |activity_id|
         # Include project-overridden activities
@@ -51,8 +51,8 @@ class Timesheet
     else
       self.users = Timesheet.viewable_users.collect {|user| user.id.to_i }
     end
-    
-    if User.current.allowed_to?(:see_all_project_timesheets, nil, :global => true)
+
+    if User.current.allowed_to?(:see_all_timesheets, nil, {:global => true})
       unless options[:groups].nil?
         self.groups= options[:groups].collect { |g| g.to_i }
         groups = Group.where(:id => self.groups)
@@ -64,7 +64,7 @@ class Timesheet
         self.groups= Group.all
       end
     end
-    
+
     if !options[:sort].nil? && options[:sort].respond_to?(:to_sym) && ValidSortOptions.keys.include?(options[:sort].to_sym)
       self.sort = options[:sort].to_sym
     else
@@ -175,23 +175,13 @@ class Timesheet
   end
 
   def self.viewable_users
-    if Setting.plugin_redmine_timesheet_plugin.present? && Setting.plugin_redmine_timesheet_plugin['user_status'] == 'all'
-      if User.current.allowed_to?(:see_all_project_timesheets, nil, :global => true)
-        user_scope = User.all
-      else
-        user_scope = [User.current]
-      end
+    is_plugin_present = Setting.plugin_redmine_timesheet_plugin.present? and (Setting.plugin_redmine_timesheet_plugin['user_status'] == 'all')
+    if User.current.allowed_to?(:see_all_timesheets, nil, :global => true)
+      user_scope = is_plugin_present ? User.all : User.active
     else
-      if User.current.allowed_to?(:see_all_project_timesheets, nil, :global => true)
-        user_scope = User.active
-      else
-        user_scope = [User.current]
-      end
+      user_scope = [User.current]
     end
-
-    user_scope.select {|user|
-      user.allowed_to?(:log_time, nil, :global => true)
-    }
+    user_scope.select {|user| user.allowed_to?(:log_time, nil, :global => true) }
   end
 
   protected
@@ -283,13 +273,13 @@ class Timesheet
       where(self.conditions(self.users)).
       order('spent_on ASC')
   end
-  
+
   def time_entries_for_all_users_in_group(group)
     return TimeEntry.includes(self.includes).
       where(self.conditions(group.user_ids)).
       order('spent_on ASC')
-  end 
-  
+  end
+
   def time_entries_for_current_user(project)
     return project.time_entries.
       includes(self.includes + [:activity, :user, {:issue => [:tracker, :assigned_to, :priority]}]).
@@ -322,20 +312,12 @@ class Timesheet
     self.projects.each do |project|
       logs = []
       users = []
-      if User.current.admin?
-        # Administrators can see all time entries
+      if current_user_allowed_to_see_all()
         logs = time_entries_for_all_users(project)
         users = logs.collect(&:user).uniq.sort
-      elsif User.current.allowed_to?(:see_all_project_timesheets, nil, :global => true)
-        # Users with the Role and correct permission can see all time entries
-        logs = time_entries_for_all_users(project)
-        users = logs.collect(&:user).uniq.sort
-      elsif User.current.allowed_to?(:view_time_entries, project)
-        # Users with permission to see their time entries
+      elsif User.current.allowed_to? :view_time_entries, project
         logs = time_entries_for_current_user(project)
         users = logs.collect(&:user).uniq.sort
-      else
-        # Rest can see nothing
       end
 
       # Append the parent project name
@@ -350,7 +332,7 @@ class Timesheet
       end
     end
   end
-  
+
   def fetch_time_entries_by_group
     groups = Group.where(:id => self.groups)
     groups.each do |group|
@@ -372,33 +354,23 @@ class Timesheet
       end
     end
   end
- 
+
+  def current_user_allowed_to_see_all
+    User.current.admin? or User.current.allowed_to?(:see_all_timesheets, nil, {:global => true})
+  end
+
   def fetch_time_entries_by_user
     self.users.each do |user_id|
       logs = []
-      if User.current.admin?
-        # Administrators can see all time entries
-        logs = time_entries_for_user(user_id)
-      elsif User.current.id == user_id
-        # Users can see their own their time entries
-        logs = time_entries_for_user(user_id)
-      elsif User.current.allowed_to?(:see_all_project_timesheets, nil, :global => true)
-        # User can see project timesheets in at least once place, so
-        # fetch the user timelogs for those projects
-        logs = time_entries_for_user(user_id, :conditions => Project.allowed_to_condition(User.current, :see_project_timesheets))
-      else
-        # Rest can see nothing
+      if User.current.id == user_id or current_user_allowed_to_see_all()
+        logs = time_entries_for_user user_id
       end
-
       unless logs.empty?
         user = User.find_by_id(user_id)
         self.time_entries[user.name] = { :logs => logs }  unless user.nil?
       end
     end
   end
-  
-  
-
 
   #   project => { :users => [users shown in logs],
   #                :issues =>
@@ -411,17 +383,12 @@ class Timesheet
       logs = []
       users = []
       project.issues.each do |issue|
-        if User.current.admin?
+        if current_user_allowed_to_see_all
           # Administrators can see all time entries
-          logs << issue_time_entries_for_all_users(issue)
-        elsif User.current.allowed_to?(:see_all_project_timesheets, nil, :global => true)
-          # Users with the Role and correct permission can see all time entries
           logs << issue_time_entries_for_all_users(issue)
         elsif User.current.allowed_to_on_single_potentially_archived_project?(:view_time_entries, project)
           # Users with permission to see their time entries
           logs << issue_time_entries_for_current_user(issue)
-        else
-          # Rest can see nothing
         end
       end
 
@@ -445,21 +412,12 @@ class Timesheet
     end
   end
 
-  
   def fetch_time_entries_by_date
-
- 
-    #---------------------------------------------------
-    
     logs = []
-
-    #           extra_conditions = 'GROUP_BY spent_on'
+    # extra_conditions = 'GROUP_BY spent_on'
     logs=TimeEntry.includes(self.includes).where(self.conditions(self.users))
-       
-       
+
     unless logs.empty?
-   
-        
       logs.each do |log|
         date=log.spent_on
         logs_to_return=[]
@@ -468,13 +426,9 @@ class Timesheet
             logs_to_return << log2return
           end
         end
-     
-           
-
         self.time_entries[date] = { :logs => logs_to_return }
       end
     end
-
   end
 
   def l(*args)

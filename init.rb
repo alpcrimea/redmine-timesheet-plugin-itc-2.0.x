@@ -1,13 +1,5 @@
 require 'redmine'
 
-## Taken from lib/redmine.rb
-#if RUBY_VERSION < '1.9'
-#  require 'faster_csv'
-#else
-#  require 'csv'
-#  FCSV = CSV
-#end
-
 if Rails::VERSION::MAJOR < 3
   require 'dispatcher'
   object_to_prepare = Dispatcher
@@ -42,7 +34,7 @@ unless Redmine::Plugin.registered_plugins.keys.include?(:redmine_timesheet_plugi
 
     version '0.7.0'
     requires_redmine :version_or_higher => '2.0.0'
-    
+
     settings(:default => {
                'list_size' => '5',
                'precision' => '2',
@@ -51,8 +43,7 @@ unless Redmine::Plugin.registered_plugins.keys.include?(:redmine_timesheet_plugi
              }, :partial => 'settings/timesheet_settings')
 
     project_module :timesheet do
-	permission :see_project_timesheets, {}
-	permission :see_all_project_timesheets, {}
+	    permission :see_all_timesheets, {}
     end
 
     menu(:top_menu,
@@ -60,9 +51,9 @@ unless Redmine::Plugin.registered_plugins.keys.include?(:redmine_timesheet_plugi
          {:controller => :timesheet, :action => :index},
          :caption => :timesheet_title,
          :if => Proc.new {
-           User.current.allowed_to?(:see_project_timesheets, nil, :global => true) ||
-           User.current.allowed_to?(:view_time_entries, nil, :global => true) ||
-           User.current.admin?
+           User.current.allowed_to?(:view_time_entries, nil, :global => true) or
+             User.current.allowed_to?(:see_all_timesheets, nil, :global => true) or
+             User.current.admin?
          })
   end
 end
