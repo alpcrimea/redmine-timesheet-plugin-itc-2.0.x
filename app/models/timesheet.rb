@@ -27,11 +27,11 @@ class Timesheet
   }
 
   def initialize(options = { })
-    self.projects = [ ]
-    self.time_entries = options[:time_entries] || { }
-    self.potential_time_entry_ids = options[:potential_time_entry_ids] || [ ]
-    self.allowed_projects = options[:allowed_projects] || [ ]
-    self.groups = [ ]
+    self.projects = []
+    self.time_entries = options[:time_entries] || {}
+    self.potential_time_entry_ids = options[:potential_time_entry_ids] || []
+    self.allowed_projects = options[:allowed_projects] || []
+    self.groups = []
 
     unless options[:activities].nil?
       self.activities = options[:activities].collect do |activity_id|
@@ -200,7 +200,7 @@ class Timesheet
       l(:field_hours)
     ]
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_csv_header, { :timesheet => self, :csv_data => csv_data})
-    return csv_data
+    csv_data
   end
 
   def time_entry_to_csv(time_entry)
@@ -217,7 +217,7 @@ class Timesheet
       time_entry.hours
     ]
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_time_entry_to_csv, { :timesheet => self, :time_entry => time_entry, :csv_data => csv_data})
-    return csv_data
+    csv_data
   end
 
   # Array of users to find
@@ -256,53 +256,52 @@ class Timesheet
     end
 
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_conditions, { :timesheet => self, :conditions => conditions})
-    return conditions
+    conditions
   end
 
   def includes
     includes = [:activity, :user, :project, {:issue => [:tracker, :assigned_to, :priority]}]
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_includes, { :timesheet => self, :includes => includes})
-    return includes
+    includes
   end
 
   private
 
 
   def time_entries_for_all_users(project)
-    return project.time_entries.includes(self.includes).
+    project.time_entries.includes(self.includes).
       where(self.conditions(self.users)).
       order('spent_on ASC')
   end
 
   def time_entries_for_all_users_in_group(group)
-    return TimeEntry.includes(self.includes).
+    TimeEntry.includes(self.includes).
       where(self.conditions(group.user_ids)).
       order('spent_on ASC')
   end
 
   def time_entries_for_current_user(project)
-    return project.time_entries.
+    project.time_entries.
       includes(self.includes + [:activity, :user, {:issue => [:tracker, :assigned_to, :priority]}]).
       where(self.conditions(User.current.id)).
       order('spent_on ASC')
   end
 
   def issue_time_entries_for_all_users(issue)
-    return issue.time_entries.includes(self.includes + [:activity, :user]).
+    issue.time_entries.includes(self.includes + [:activity, :user]).
       where(self.conditions(self.users)).
       order('spent_on ASC')
   end
 
   def issue_time_entries_for_current_user(issue)
-    return issue.time_entries.includes(self.includes + [:activity, :user]).
+    issue.time_entries.includes(self.includes + [:activity, :user]).
       where(self.conditions(User.current.id)).
       order('spent_on ASC')
   end
 
   def time_entries_for_user(user, options={})
-    extra_conditions = options.delete(:conditions)
-
-    return TimeEntry.includes(self.includes).
+    extra_conditions = options.delete :conditions
+    TimeEntry.includes(self.includes).
       where(self.conditions([user], extra_conditions)).
       order('spent_on ASC')
   end
@@ -345,9 +344,6 @@ class Timesheet
         #Users with the Role and correct permission can see all time entries
         logs = time_entries_for_all_users_in_group(group)
         users = logs.collect(&:user).uniq.sort
-      else
-
-        #Rest can see nothing
       end
       unless logs.empty?
         self.time_entries[group.name] = { :logs => logs, :users => users }
@@ -397,8 +393,6 @@ class Timesheet
 
       unless logs.empty?
         users << logs.collect(&:user).uniq.sort
-
-
         issues = logs.collect(&:issue).uniq
         issue_logs = { }
         issues.each do |issue|

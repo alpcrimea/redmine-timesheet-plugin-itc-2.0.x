@@ -1,20 +1,15 @@
 class TimesheetController < ApplicationController
   unloadable
-
   layout 'base'
   before_filter :get_list_size
   before_filter :get_precision
   before_filter :get_activities
-
   helper :sort
   include SortHelper
   helper :issues
   include ApplicationHelper
   helper :timelog
-
   SessionKey = 'timesheet_filter'
-
-#  verify :method => :delete, :only => :reset, :render => {:nothing => true, :status => :method_not_allowed }
 
   def index
     load_filters_from_session
@@ -22,10 +17,8 @@ class TimesheetController < ApplicationController
       @timesheet ||= Timesheet.new
     end
     @timesheet.allowed_projects = allowed_projects
-
     if @timesheet.allowed_projects.empty?
       render :action => 'no_projects'
-      return
     end
   end
 
@@ -34,14 +27,12 @@ class TimesheetController < ApplicationController
       @timesheet = Timesheet.new(params[:timesheet])
     else
       redirect_to :action => 'index'
-      return
     end
 
     @timesheet.allowed_projects = allowed_projects
 
     if @timesheet.allowed_projects.empty?
       render :action => 'no_projects'
-      return
     end
 
     if !params[:timesheet][:projects].blank?
@@ -119,10 +110,12 @@ class TimesheetController < ApplicationController
   end
 
   def allowed_projects
-    if User.current.admin?
-      return Project.order('name ASC')
+    # allowed_to? works with the default project-role-permission relationship.
+    # if a user has no active role (for example if all projects are archived) then them has not the permission
+    if User.current.admin? or User.current.allowed_to?(:see_all_timesheets, nil, {:global => true})
+      Project.order('name ASC')
     else
-      return Project.where(Project.visible_condition(User.current)).order('name ASC')
+      Project.where(Project.visible_condition(User.current)).order('name ASC')
     end
   end
 
