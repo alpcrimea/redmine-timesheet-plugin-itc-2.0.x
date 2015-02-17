@@ -383,7 +383,7 @@ class Timesheet
       logs = []
       users = []
       project.issues.each do |issue|
-        if current_user_allowed_to_see_all
+        if current_user_allowed_to_see_all()
           # Administrators can see all time entries
           logs << issue_time_entries_for_all_users(issue)
         elsif User.current.allowed_to_on_single_potentially_archived_project?(:view_time_entries, project)

@@ -2,7 +2,7 @@
 
 Show and filter timelog entries across all projects in Redmine.
 
-This is a Redmine 2+ compatible version of {plugin}[https://github.com/edavis10/redmine-timesheet-plugin] originally created by Eric Davis to generate timesheets from timelogs.
+This is a Redmine 2+ compatible version of the {plugin}[https://github.com/edavis10/redmine-timesheet-plugin] originally created by Eric Davis to generate timesheets from timelogs.
 
 Further modifications are:
 * The addition of a version field in the report table
