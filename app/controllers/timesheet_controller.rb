@@ -12,6 +12,7 @@ class TimesheetController < ApplicationController
   SessionKey = 'timesheet_filter'
 
   def index
+    return unless User.current.allowed_to? :view_time_entries, nil, :global => true
     load_filters_from_session
     unless @timesheet
       @timesheet ||= Timesheet.new
@@ -23,6 +24,7 @@ class TimesheetController < ApplicationController
   end
 
   def report
+    return unless User.current.allowed_to? :view_time_entries, nil, :global => true
     if params && params[:timesheet]
       @timesheet = Timesheet.new(params[:timesheet])
     else
