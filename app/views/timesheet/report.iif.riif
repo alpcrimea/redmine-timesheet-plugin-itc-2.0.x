@@ -36,10 +36,10 @@ iif.trns do
     # nameistaxable 'N' # doesn't exist in gem's dsl
   end
 
-  spl do
+  spl do |spl|
     timesheet.time_entries.each do |project, project_data|
       (project_data[:logs] && []).each do |time_entry|
-        row do
+        spl.row do
           trnstype 'INVOICE'
           date time_entry.spent_on.strftime("%m/%d/%Y")
           accnt 'Service Income'
