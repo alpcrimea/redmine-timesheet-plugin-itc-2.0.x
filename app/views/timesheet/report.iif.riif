@@ -51,8 +51,8 @@ iif.trns do
           price time_entry.project.custom_value_for(10)
           invitem 'website'
           taxable 'N'
-          yeartodate '0'
-          wagebase '0'
+          # yeartodate '0' # doesn't exist in gem's dsl
+          # wagebase '0' # doesn't exist in gem's dsl 
         end
       end
     end
