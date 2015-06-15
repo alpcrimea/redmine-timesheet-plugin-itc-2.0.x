@@ -85,7 +85,16 @@ class TimesheetController < ApplicationController
     respond_to do |format|
       format.html { render :action => 'details', :layout => false if request.xhr? }
       format.csv  { send_data @timesheet.to_csv, :filename => 'timesheet.csv', :type => "text/csv" }
-      format.iif  { render :iif => render_to_string(:locals => { :total => @total, :grand_total => @grand_total, :timesheet => @timesheet }), :filename => 'timesheet.iif' }
+      format.iif  { render 
+        :iif => render_to_string(:locals => { 
+          :total        => @total, 
+          :grand_total  => @grand_total, 
+          :timesheet    => @timesheet,
+          :date_from    => @timesheet.date_from.to_date,
+          :date_to      => @timesheet.date_to.to_date
+        }), 
+        :filename => 'timesheet.iif' 
+      }
     end
   end
 
