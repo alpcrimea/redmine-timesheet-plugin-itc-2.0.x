@@ -1,0 +1,59 @@
+iif.accnt do 
+  row do
+    name 'Accounts Receivable'
+    accnttype 'AR'
+  end
+
+  row do
+    name 'Service Income'
+    accnttype 'INC'
+  end
+end
+
+iif.invitem do
+  row do
+    name 'website'
+    invitemtype 'SERV'
+    desc 'website'
+    accnt 'Services'
+    price '1'
+    cost '0'
+    taxable 'N'
+  end
+end
+
+iif.trns do
+  row do
+    trnstype 'INVOICE'
+    date Time.now.strftime("%m/%d/%Y")
+    accnt 'Accounts Receivable'
+    name 'Customer'
+    amount @grand_total.to_s docnum "#{@timesheet.date_from.year}--#{@total.keys.collect{|p| p.id.to_s }.join('-')}--#{@timesheet.date_from.strftime('%m-%d')}--#{@timeshaeet.date_to.strftime('%m-%d')}"
+    memo "Time entered for #{@timesheet.time_entries.map { |project, data| project }.join(', ') } between #{@timesheet.date_from} and #{@timesheet.date_to}"
+    clear 'N'
+    toprive 'Y'
+    nameistaxable 'N'
+  end
+
+  spl do
+    @timesheet.time_entries.each do |project, project_data|
+      (product_data[:logs] && []).each do |time_entry|
+        row do
+          trnstype 'INVOICE'
+          date time_entry.spent_on.strftime("%m/%d/%Y")
+          accnt 'Service Income'
+          amount project.custom_field_value_for(10).to_i * time_entry.hours
+          memo "#{time_entry.user.name} [#{time_entry.spent_on.strftime("%Y-%m-%d")}] ##{time_entry.issue.id} - #{time_entry.issue.subject}"
+          clear 'N'
+          qnty time_entry.hours
+          # TODO: Hardcoded the custom_field id for now since there isn't a nice getter from name
+          price project.custom_field_value_for(10)
+          invitem 'website'
+          taxable 'N'
+          yeartodate '0'
+          wagebase '0'
+        end
+      end
+    end
+  end
+end

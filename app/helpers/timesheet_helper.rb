@@ -39,6 +39,18 @@ module TimesheetHelper
       :class => 'icon icon-timesheet')
   end
 
+  def link_to_iif_export(timesheet)
+    link_to('Quickbooks',
+      {
+        :controller => 'timesheet',
+        :action => 'report',
+        :format => 'iif',
+        :timesheet => timesheet.to_param
+      },
+      :method => 'post',
+      :class => 'icon icon-timesheet')
+  end
+
   def toggle_issue_arrows(issue_id)
     js = "toggleTimeEntries('#{issue_id}'); return false;"
 

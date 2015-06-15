@@ -85,6 +85,7 @@ class TimesheetController < ApplicationController
     respond_to do |format|
       format.html { render :action => 'details', :layout => false if request.xhr? }
       format.csv  { send_data @timesheet.to_csv, :filename => 'timesheet.csv', :type => "text/csv" }
+      format.iif  { render :iif => render_to_string, :filename => 'timesheet.iif', :type => 'application/qbooks' }
     end
   end
 
