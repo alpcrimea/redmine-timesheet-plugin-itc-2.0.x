@@ -38,7 +38,7 @@ iif.trns do
 
   spl do
     timesheet.time_entries.each do |project, project_data|
-      (product_data[:logs] && []).each do |time_entry|
+      (project_data[:logs] && []).each do |time_entry|
         row do
           trnstype 'INVOICE'
           date time_entry.spent_on.strftime("%m/%d/%Y")
