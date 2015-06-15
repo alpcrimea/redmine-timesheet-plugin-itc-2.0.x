@@ -29,7 +29,7 @@ iif.trns do
     accnt 'Accounts Receivable'
     name 'Customer'
     amount grand_total.to_s
-    docnum "#{date_from.year}--#{timesheet.time_entries.keys.collect{|p| p.id.to_s }.join('-')}--#{date_from.strftime('%m-%d')}--#{date_to.strftime('%m-%d')}"
+    docnum "#{date_from.year}--#{timesheet.allowed_projects.collect{|p| p.id.to_s }.join('-')}--#{date_from.strftime('%m-%d')}--#{date_to.strftime('%m-%d')}"
     memo "Time entered for #{timesheet.time_entries.map { |project, data| project }.join(', ') } between #{date_from.strftime('%Y-%m-%d')} and #{date_to.strftime('%Y-%m-%d')}"
     clear 'N'
     toprive 'Y'
