@@ -28,15 +28,15 @@ iif.trns do
     date Time.now.strftime("%m/%d/%Y")
     accnt 'Accounts Receivable'
     name 'Customer'
-    amount @grand_total.to_s docnum "#{@timesheet.date_from.year}--#{@total.keys.collect{|p| p.id.to_s }.join('-')}--#{@timesheet.date_from.strftime('%m-%d')}--#{@timeshaeet.date_to.strftime('%m-%d')}"
-    memo "Time entered for #{@timesheet.time_entries.map { |project, data| project }.join(', ') } between #{@timesheet.date_from} and #{@timesheet.date_to}"
+    amount grand_total.to_s docnum "#{timesheet.date_from.year}--#{total.keys.collect{|p| p.id.to_s }.join('-')}--#{timesheet.date_from.strftime('%m-%d')}--#{timeshaeet.date_to.strftime('%m-%d')}"
+    memo "Time entered for #{timesheet.time_entries.map { |project, data| project }.join(', ') } between #{timesheet.date_from} and #{timesheet.date_to}"
     clear 'N'
     toprive 'Y'
     nameistaxable 'N'
   end
 
   spl do
-    @timesheet.time_entries.each do |project, project_data|
+    timesheet.time_entries.each do |project, project_data|
       (product_data[:logs] && []).each do |time_entry|
         row do
           trnstype 'INVOICE'
