@@ -33,7 +33,7 @@ iif.trns do
     memo "Time entered for #{timesheet.time_entries.map { |project, data| project }.join(', ') } between #{date_from.strftime('%Y-%m-%d')} and #{date_to.strftime('%Y-%m-%d')}"
     clear 'N'
     toprint 'Y'
-    nameistaxable 'N'
+    # nameistaxable 'N' # doesn't exist in gem's dsl
   end
 
   spl do
