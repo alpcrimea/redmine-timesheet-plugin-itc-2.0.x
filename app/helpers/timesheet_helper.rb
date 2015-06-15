@@ -142,4 +142,16 @@ module TimesheetHelper
                         [l(:label_this_year), 'current_year']],
                         value)
   end
+
+  def amount_for(time_entry)
+    price_for(time_entry).value.to_i * quantity_for(time_entry)
+  end
+
+  def quantity_for(time_entry)
+    -time_entry_hours
+  end
+
+  def price_for(time_entry)
+    time_entry.project.custom_value_for(10)
+  end
 end
