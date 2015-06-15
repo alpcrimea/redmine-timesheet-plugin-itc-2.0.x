@@ -43,7 +43,7 @@ iif.trns do
           trnstype 'INVOICE'
           date time_entry.spent_on.strftime("%m/%d/%Y")
           accnt 'Service Income'
-          amount time_entry.project.custom_value_for(10).to_i * time_entry.hours
+          amount time_entry.project.custom_value_for(10).value.to_i * time_entry.hours
           memo "#{time_entry.user.name} [#{time_entry.spent_on.strftime("%Y-%m-%d")}] ##{time_entry.issue.id} - #{time_entry.issue.subject}"
           clear 'N'
           qnty time_entry.hours
