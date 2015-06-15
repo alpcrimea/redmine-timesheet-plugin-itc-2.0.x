@@ -150,7 +150,7 @@ class Timesheet
 
   def to_csv
     out = "";
-    FCSV.generate(out, :encoding => 'u', :force_quotes => true) do |csv|
+    CSV.generate(out, :encoding => 'u', :force_quotes => true) do |csv|
       csv << csv_header
 
       # Write the CSV based on the group/sort
