@@ -22,8 +22,8 @@ iif.invitem do
   end
 end
 
-iif.trns do
-  row do
+iif.trns do |trns|
+  trns.row do
     trnstype 'INVOICE'
     date Time.now.strftime("%m/%d/%Y")
     accnt 'Accounts Receivable'
@@ -36,7 +36,7 @@ iif.trns do
     # nameistaxable 'N' # doesn't exist in gem's dsl
   end
 
-  spl do |spl|
+  trns.spl do |spl|
     timesheet.time_entries.each do |project, data|
       data[:logs].each do |time_entry|
         spl.row do
