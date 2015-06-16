@@ -94,7 +94,7 @@ class TimesheetController < ApplicationController
             :date_from    => @timesheet.date_from.to_date,
             :date_to      => @timesheet.date_to.to_date
           }), 
-          :filename => "timesheet-#{@timesheet.projects.collect{|p| p.id.to_s.lpad(3, '0')}.join('')}" 
+          :filename => "timesheet-#{@timesheet.projects.collect{|p| p.id.to_s.ljust(3, '0')}.join('')}" 
         )
       }
     end
