@@ -29,7 +29,7 @@ iif.trns do |trns|
     accnt 'Accounts Receivable'
     name 'Customer'
     amount timesheet.time_entries.map { |project, data| data[:logs].inject(0) { |sum, time_entry| sum + time_entry.invoice_amount } }.sum
-    docnum "#{date_from.year}-#{timesheet.projects.collect{|p| p.id.to_s.ljust(3, '0') }.join('')}-#{date_from.strftime('%m%d')}-#{date_to.strftime('%m%d')}"
+    docnum "#{date_from.year}-#{timesheet.projects.collect{|p| p.id.to_s.rjust(3, '0') }.join('')}-#{date_from.strftime('%m%d')}-#{date_to.strftime('%m%d')}"
     memo "Time entered for #{timesheet.time_entries.map { |project, data| project }.join(', ') } between #{date_from.strftime('%Y-%m-%d')} and #{date_to.strftime('%Y-%m-%d')}"
     clear 'N'
     toprint 'Y'
