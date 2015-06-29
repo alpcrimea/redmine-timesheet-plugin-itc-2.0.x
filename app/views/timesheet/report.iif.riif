@@ -1,0 +1,60 @@
+iif.accnt do 
+  row do
+    name 'Accounts Receivable'
+    accnttype 'AR'
+  end
+
+  row do
+    name 'Service Income'
+    accnttype 'INC'
+  end
+end
+
+iif.invitem do
+  row do
+    name 'website'
+    invitemtype 'SERV'
+    desc 'website'
+    accnt 'Services'
+    price '1'
+    cost '0'
+    taxable 'N'
+  end
+end
+
+iif.trns do |trns|
+  trns.row do
+    trnstype 'INVOICE'
+    date Time.now.strftime("%m/%d/%Y")
+    accnt 'Accounts Receivable'
+    name 'Customer'
+    amount -timesheet.time_entries.map { |project, data| data[:logs].inject(0) { |sum, time_entry| sum + time_entry.invoice_amount } }.sum
+    docnum "#{date_from.year}-#{timesheet.projects.collect{|p| p.id.to_s.rjust(3, '0') }.join('')}-#{date_from.strftime('%m%d')}-#{date_to.strftime('%m%d')}"
+    memo "Time entered for #{timesheet.time_entries.map { |project, data| project }.join(', ') } between #{date_from.strftime('%Y-%m-%d')} and #{date_to.strftime('%Y-%m-%d')}"
+    clear 'N'
+    toprint 'Y'
+    # nameistaxable 'N' # doesn't exist in gem's dsl
+  end
+
+  trns.spl do |spl|
+    timesheet.time_entries.each do |project, data|
+      data[:logs].each do |time_entry|
+        spl.row do
+          trnstype 'INVOICE'
+          date time_entry.spent_on.strftime("%m/%d/%Y")
+          accnt 'Service Income'
+          amount time_entry.invoice_amount
+          memo "#{time_entry.user.name} [#{time_entry.spent_on.strftime("%Y-%m-%d")}] ##{time_entry.issue.id} - #{time_entry.issue.subject}"
+          clear 'N'
+          qnty time_entry.invoice_quantity
+          # TODO: Hardcoded the custom_field id for now since there isn't a nice getter from name
+          price time_entry.invoice_price
+          invitem 'website'
+          taxable 'N'
+          # yeartodate '0' # doesn't exist in gem's dsl
+          # wagebase '0' # doesn't exist in gem's dsl 
+        end
+      end
+    end
+  end
+end
