@@ -1,0 +1,18 @@
+tr:
+  timesheet_title: Zaman Çizelgesi
+  timesheet_date_range_label: Zaman aralığı
+  timesheet_date_from_label: Tarihinden
+  timesheet_date_to_label: Tarihine
+  timesheet_project_label: Birim
+  timesheet_activities_label: Faaliyet
+  timesheet_users_label: Kişiler
+  timesheet_showing_users: 'şu kişinin zamanı: '
+  timesheet_permalink: '(bu çizelgeye kalıcı link. Permalink)'
+  timesheet_group_by: Grupla
+  label_show_project_status: "Durumu şu olan birimler:"
+  text_active_projects: "Aktif"
+  text_all_projects: "Hepsi (aktif ve arşivlenmiş)"
+  label_user_status: "Şu durumda olan kullanıcaları göster"
+  text_active_users: "Aktif"
+  text_all_users: "Hepsi"
+  timesheet_groups_label: Gruplar
