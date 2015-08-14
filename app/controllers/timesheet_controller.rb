@@ -8,6 +8,8 @@ class TimesheetController < ApplicationController
   include SortHelper
   helper :issues
   include ApplicationHelper
+  helper :custom_fields
+  include CustomFieldsHelper
   helper :timelog
   SessionKey = 'timesheet_filter'
 
@@ -26,6 +28,9 @@ class TimesheetController < ApplicationController
   def report
     return unless User.current.allowed_to? :view_time_entries, nil, :global => true
     if params && params[:timesheet]
+      if params[:project]
+        params[:timesheet][:project_custom_field_values]=params[:project][:custom_field_values]
+      end
       @timesheet = Timesheet.new(params[:timesheet])
     else
       redirect_to :action => 'index'

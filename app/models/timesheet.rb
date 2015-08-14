@@ -1,5 +1,5 @@
 class Timesheet
-  attr_accessor :date_from, :date_to, :projects, :activities, :users, :groups, :allowed_projects, :period, :period_type
+  attr_accessor :date_from, :date_to, :projects, :activities, :users, :groups, :allowed_projects, :period, :period_type,  :custom_field_values, :project_custom_field_values
 
   # Time entries on the Timesheet in the form of:
   #   project.name => {:logs => [time entries], :users => [users shown in logs] }
@@ -16,7 +16,7 @@ class Timesheet
   ValidSortOptions = {
     :project => 'Project',
     :user => 'User',
-    :issue => 'Issue',
+  #  :issue => 'Issue',
     :group => 'Group',
     :date => 'Date'
   }
@@ -31,6 +31,8 @@ class Timesheet
     self.time_entries = options[:time_entries] || {}
     self.potential_time_entry_ids = options[:potential_time_entry_ids] || []
     self.allowed_projects = options[:allowed_projects] || []
+    self.custom_field_values = options[:custom_field_values] || [ ]
+    self.project_custom_field_values = options[:project_custom_field_values] || [ ]
     self.groups = []
 
     unless options[:activities].nil?
@@ -91,8 +93,8 @@ class Timesheet
       fetch_time_entries_by_project
     when :user
       fetch_time_entries_by_user
-    when :issue
-      fetch_time_entries_by_issue
+  #  when :issue
+  #    fetch_time_entries_by_issue
     when :group
       fetch_time_entries_by_group
     when :date
@@ -144,7 +146,9 @@ class Timesheet
       :date_to => date_to,
       :activities => activities,
       :users => users,
-      :sort => sort
+      :custom_field_values => custom_field_values,
+      :project_custom_field_values => project_custom_field_values,
+      :sort => sort,
     }
   end
 
@@ -187,68 +191,154 @@ class Timesheet
   protected
 
   def csv_header
+    proj_fields = ProjectCustomField.all
     csv_data = [
-      '#',
-      l(:label_date),
-      l(:label_member),
-      l(:label_activity),
-      l(:label_project),
-      l(:label_version),
-      l(:label_issue),
-      "#{l(:label_issue)} #{l(:field_subject)}",
-      l(:field_comments),
-      l(:field_hours)
+                '#',
+                t(:label_date),
+                t(:label_month),
+                t(:label_member),
+                t(:field_hours)
+    ];
+
+    if (proj_fields)
+      proj_fields.each do |value|
+        if value.name=='Category'
+          csv_data << value.name
+          __END__
+        end
+      end
+    end
+
+    csv_data.concat [
+                t(:label_project),
+                t(:label_version),
+                'Task',
+                t(:label_issue),
+                "#{t(:label_issue)} #{t(:field_subject)}",
+                t(:field_comments),
+                t(:label_activity)
     ]
+
+    if (proj_fields)
+      proj_fields.each do |value|
+        if ( value.name!='Category') && ( value.name!='Worklog')
+          csv_data << value.name
+        end
+      end
+    end
+
+    time_entry_header = TimeEntry.new
+    time_entry_header.custom_field_values.each do |value|
+      unless value.custom_field.name=='Worklog'
+        csv_data << value.custom_field.name
+      end
+    end
+
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_csv_header, { :timesheet => self, :csv_data => csv_data})
     csv_data
   end
 
   def time_entry_to_csv(time_entry)
+    proj_fields = ProjectCustomField.all
+    custom_fields_helper = Object.new.extend(CustomFieldsHelper)
     csv_data = [
-      time_entry.id,
-      time_entry.spent_on,
-      time_entry.user.name,
-      time_entry.activity.name,
+                time_entry.id,
+                time_entry.spent_on.strftime( "%m/%d/%Y" ),
+                "#{time_entry.spent_on.year}#{(time_entry.spent_on.month<10)?'0':''}#{time_entry.spent_on.month}",
+                time_entry.user.name,
+        time_entry.hours
+    ];
+
+    if (proj_fields)
+      p = time_entry.project
+      proj_fields.each do |value|
+        if value.name=='Category'
+          csv_data << p.custom_value_for(value.id) || " "
+        end
+      end
+    end
+
+    csv_data.concat [
       time_entry.project.name,
-      (time_entry.issue.fixed_version if time_entry.issue),
+      (  if time_entry.issue.fixed_version_id then Version.find(time_entry.issue.fixed_version_id).name else '' end ),
+      ("#{time_entry.issue.tracker.name} ##{time_entry.issue.id}" if time_entry.issue )+':'+(time_entry.issue.subject if time_entry.issue) ,
       ("#{time_entry.issue.tracker.name} ##{time_entry.issue.id}" if time_entry.issue),
-      (time_entry.issue.subject if time_entry.issue),
-      time_entry.comments,
-      time_entry.hours
+      (time_entry.issue.subject if time_entry.issue)
     ]
+
+    comment=time_entry.comments
+    time_entry.custom_field_values.each do |value|
+      if  value.custom_field.name=='Worklog'
+        comment.concat "\n" +  value.value
+      end
+    end
+
+    csv_data << comment
+    csv_data << time_entry.activity.name
+
+    if (proj_fields)
+      p = time_entry.project
+      proj_fields.each do |value|
+        unless  value.name='Category'
+          csv_data << p.custom_value_for(value.id) || " "
+        end
+      end
+    end
+
+    time_entry.custom_field_values.each do |value|
+      unless value.custom_field.name=='Worklog'
+        csv_data << value.value
+      end
+    end
+
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_time_entry_to_csv, { :timesheet => self, :time_entry => time_entry, :csv_data => csv_data})
     csv_data
+  end
+
+  def project_ids (projects)
+      custom_field_project_conditions="TRUE"
+      self.project_custom_field_values.each do |value|
+        custom_field_project_conditions << " AND #{CustomValue.table_name}.custom_field_id = #{value[0]} AND #{CustomValue.table_name}.value = '#{value[1]}'" unless value[2] && value[2].empty?
+      end
+      ids=( Project.includes(:custom_values).references(:custom_values).where(custom_field_project_conditions).collect {|p| p.id} ) & (Project.all.collect {|p| p.id})
+      return ids
   end
 
   # Array of users to find
   # String of extra conditions to add onto the query (AND)
   def conditions(users, extra_conditions=nil)
+    # @todo: Add multiple custom fields selection
+    custom_field_conditions = ""
+    self.custom_field_values.each do |value|
+      custom_field_conditions << " AND #{CustomValue.table_name}.custom_field_id = #{value[0]} AND #{CustomValue.table_name}.value = '#{value[1]}'" unless value[1].empty?
+    end
+
     if self.potential_time_entry_ids.empty?
       if self.date_from.present? && self.date_to.present?
         conditions = ["spent_on >= (:from) AND spent_on <= (:to) AND #{TimeEntry.table_name}.project_id IN (:projects) AND user_id IN (:users) AND activity_id IN (:activities)",
-          {
-            :from => self.date_from,
-            :to => self.date_to,
-            :projects => self.projects,
-            :activities => self.activities,
-            :groups => self.groups,
-            :users => users
-          }]
+                      {
+          :from => self.date_from,
+          :to => self.date_to,
+          :projects => self.project_ids(self.projects),
+          :activities => self.activities,
+          :groups => self.groups,
+          :users => users
+        }]
       else # All time
         conditions = ["#{TimeEntry.table_name}.project_id IN (:projects) AND user_id IN (:users) AND activity_id IN (:activities)",
-          {
-            :projects => self.projects,
-            :activities => self.activities,
-            :groups => self.groups,
-            :users => users
-          }]
+                      {
+          :projects => self.project_ids(self.projects),
+          :activities => self.activities,
+          :groups => self.groups,
+          :users => users
+        }]
       end
     else
       conditions = ["user_id IN (:users) AND #{TimeEntry.table_name}.id IN (:potential_time_entries)",
-        {
-          :users => users,
-          :potential_time_entries => self.potential_time_entry_ids
-        }]
+                    {
+        :users => users,
+        :potential_time_entries => self.potential_time_entry_ids
+      }]
     end
 
     if extra_conditions
@@ -260,7 +350,7 @@ class Timesheet
   end
 
   def includes
-    includes = [:activity, :user, :project, {:issue => [:tracker, :assigned_to, :priority]}]
+    includes = [:activity, :user, :project, {:issue => [:tracker, :assigned_to, :priority]},:custom_values]
     Redmine::Hook.call_hook(:plugin_timesheet_model_timesheet_includes, { :timesheet => self, :includes => includes})
     includes
   end
@@ -288,13 +378,13 @@ class Timesheet
   end
 
   def issue_time_entries_for_all_users(issue)
-    issue.time_entries.includes(self.includes + [:activity, :user]).
+    issue.time_entries.includes(self.includes + [:activity, :user, :custom_values]).
       where(self.conditions(self.users)).
       order('spent_on ASC')
   end
 
   def issue_time_entries_for_current_user(issue)
-    issue.time_entries.includes(self.includes + [:activity, :user]).
+    issue.time_entries.includes(self.includes + [:activity, :user, :custom_values]).
       where(self.conditions(User.current.id)).
       order('spent_on ASC')
   end

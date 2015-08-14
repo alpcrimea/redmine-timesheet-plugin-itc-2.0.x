@@ -9,9 +9,19 @@
     <th width="10%"><%= l(:label_member) %></th>
     <th width="15%"><%= l(:label_activity) %></th>
     <th width="15%"><%= l(:label_project) %></th>
+    <%@proj_fields = ProjectCustomField.all
+      if (@proj_fields)
+      @proj_fields.each do |pval| %>
+        <th width="10%"><%= pval.name %></th>
+      <%  end %>
+    <% end %>
     <th width="15%"><%= l(:label_version) %></th>
     <th width="10%"><%= l(:label_issue) %></th>
     <th width="25%"><%= l(:field_comments) %></th>
+    <% time_entry = TimeEntry.new
+    time_entry.custom_field_values.each do |value| %>
+      <th width="10%"><%= value.custom_field.name %></th>
+    <% end %>
     <th width="10%"><%= l(:field_hours) %></th>
     <%= call_hook(:plugin_timesheet_views_timesheet_group_header, {}) %>
     <th></th>

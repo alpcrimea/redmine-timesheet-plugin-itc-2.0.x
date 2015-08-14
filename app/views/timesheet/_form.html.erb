@@ -44,6 +44,25 @@
           <%= select_tag 'timesheet[groups][]', group_options(@timesheet), { :multiple => true, :size => @list_size} %>
         </div>
       <% end %>
+      <% 
+      project=Project.new
+      project.custom_field_values = @timesheet.project_custom_field_values unless @timesheet.project_custom_field_values.empty?
+      project.custom_field_values.each do |value| %>
+      <p><%= custom_field_tag_with_label :project, value %></p>
+      <% end %>
+
+      <% time_entry = TimeEntry.new
+      time_entry.custom_field_values = @timesheet.custom_field_values unless @timesheet.custom_field_values.empty?
+      time_entry.custom_field_values.each do |value|
+      unless value.custom_field.name == 'Worklog'
+        # Remove required attribute for the search
+            value.custom_field.is_required = false
+                value.custom_field.default_value = ""
+                    value.value = "" if @timesheet.custom_field_values.empty?
+                        %>
+                        <p><%= custom_field_tag_with_label :timesheet, value %></p>
+        <% end %>
+      <% end %>
       <%= call_hook(:plugin_timesheet_view_timesheet_form, { :timesheet => @timesheet, :params => params, :list_size => @list_size }) %>
       <div class="form-actions">
         <%= submit_tag l(:button_apply),:class => 'button-small' -%>
