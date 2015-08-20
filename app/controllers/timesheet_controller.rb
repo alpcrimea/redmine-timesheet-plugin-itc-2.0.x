@@ -131,10 +131,12 @@ class TimesheetController < ApplicationController
   def allowed_projects
     # allowed_to? works with the default project-role-permission relationship.
     # if a user has no active role (for example if all projects are archived) then them has not the permission
+    projects = Project.all
+    projects = projects.active if (Setting.respond_to? :plugin_redmine_timesheet_plugin) && Setting.plugin_redmine_timesheet_plugin && Setting.plugin_redmine_timesheet_plugin['project_status'].to_s == 'active'
     if User.current.admin? or User.current.allowed_to?(:see_all_timesheets, nil, {:global => true})
-      Project.order('name ASC')
+      projects.order('name ASC')
     else
-      Project.where(Project.visible_condition(User.current)).order('name ASC')
+      projects.where(Project.visible_condition(User.current)).order('name ASC')
     end
   end
 
