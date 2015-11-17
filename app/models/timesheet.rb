@@ -297,7 +297,7 @@ class Timesheet
   def project_ids (projects)
       custom_field_project_conditions="TRUE"
       self.project_custom_field_values.each do |value|
-        custom_field_project_conditions << " AND #{CustomValue.table_name}.custom_field_id = #{value[0]} AND #{CustomValue.table_name}.value = '#{value[1]}'" unless value[2] && value[2].empty?
+        custom_field_project_conditions << " AND #{CustomValue.table_name}.custom_field_id = #{value[0]} AND #{CustomValue.table_name}.value = '#{value[1]}'" unless value[1].empty?
       end
       ids=( Project.includes(:custom_values).references(:custom_values).where(custom_field_project_conditions).collect {|p| p.id} ) & (Project.all.collect {|p| p.id})
       return ids
