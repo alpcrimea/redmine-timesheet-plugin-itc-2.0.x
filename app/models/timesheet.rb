@@ -204,7 +204,6 @@ class Timesheet
       proj_fields.each do |value|
         if value.name=='Category'
           csv_data << value.name
-          __END__
         end
       end
     end
