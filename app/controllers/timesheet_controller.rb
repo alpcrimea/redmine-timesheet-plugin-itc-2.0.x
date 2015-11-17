@@ -31,7 +31,11 @@ class TimesheetController < ApplicationController
       if params[:project]
         params[:timesheet][:project_custom_field_values]=params[:project][:custom_field_values]
       end
-      @timesheet = Timesheet.new(params[:timesheet])
+      begin
+         params[:timesheet]= Rack::Utils.parse_nested_query(params[:timesheet]) if params[:timesheet].kind_of? String
+      rescue
+      end
+      @timesheet = Timesheet.new(params[:timesheet]) || Timesheet.new(Rack::Utils.parse_nested_query(params[:timesheet]))
     else
       redirect_to :action => 'index'
     end

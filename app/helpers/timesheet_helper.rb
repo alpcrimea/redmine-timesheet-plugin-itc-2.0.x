@@ -28,15 +28,15 @@ module TimesheetHelper
   end
 
   def link_to_csv_export(timesheet)
-    link_to('CSV',
+    button_to('CSV',
       {
         :controller => 'timesheet',
         :action => 'report',
         :format => 'csv',
-        :timesheet => timesheet.to_param
       },
+      :params => {:timesheet => timesheet.to_param},
       :method => 'post',
-      :class => 'icon icon-timesheet')
+      :class => 'btn btn-link')
   end
 
   def link_to_iif_export(timesheet)

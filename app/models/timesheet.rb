@@ -194,10 +194,10 @@ class Timesheet
     proj_fields = ProjectCustomField.all
     csv_data = [
                 '#',
-                t(:label_date),
-                t(:label_month),
-                t(:label_member),
-                t(:field_hours)
+                l(:label_date),
+                l(:label_month),
+                l(:label_member),
+                l(:field_hours)
     ];
 
     if (proj_fields)
@@ -209,13 +209,13 @@ class Timesheet
     end
 
     csv_data.concat [
-                t(:label_project),
-                t(:label_version),
+                l(:label_project),
+                l(:label_version),
                 'Task',
-                t(:label_issue),
-                "#{t(:label_issue)} #{t(:field_subject)}",
-                t(:field_comments),
-                t(:label_activity)
+                l(:label_issue),
+                "#{l(:label_issue)} #{l(:field_subject)}",
+                l(:field_comments),
+                l(:label_activity)
     ]
 
     if (proj_fields)
