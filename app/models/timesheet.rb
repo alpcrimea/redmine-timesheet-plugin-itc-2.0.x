@@ -162,14 +162,20 @@ class Timesheet
       when :user, :project
         time_entries.sort.each do |entryname, entry|
           entry[:logs].each do |e|
+	    begin
             csv << time_entry_to_csv(e)
+	    rescue
+	    end
           end
         end
       when :issue
         time_entries.sort.each do |project, entries|
           entries[:issues].sort {|a,b| a[0].id <=> b[0].id}.each do |issue, time_entries|
             time_entries.each do |e|
+	      begin
               csv << time_entry_to_csv(e)
+	      rescue
+	      end
             end
           end
         end
